@@ -38,6 +38,7 @@ class Statistics(BaseModel):
 
 class AnalyzeResponse(BaseModel):
     difficulty_score: float
+    processing_time_ms: int
     statistics: Statistics
     top_words: List[TopWord]
 
@@ -63,6 +64,9 @@ def calculate_difficulty_score(top_words: List[dict], total_words: int, avg_dept
 
 @router.post("/analyze", response_model=AnalyzeResponse)
 def analyze_text(payload: AnalyzeRequest):
+    import time
+    start_time = time.time()
+    
     text = payload.text
     
     doc = nlp(text)
@@ -149,8 +153,11 @@ def analyze_text(payload: AnalyzeRequest):
     
     difficulty_score = calculate_difficulty_score(top_words, total_words, avg_tree_depth)
     
+    processing_time_ms = int((time.time() - start_time) * 1000)
+    
     return AnalyzeResponse(
         difficulty_score=difficulty_score,
+        processing_time_ms=processing_time_ms,
         statistics=Statistics(
             total_words=total_words,
             unique_lemmas=unique_lemmas,
