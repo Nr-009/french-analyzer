@@ -1,6 +1,9 @@
 package com.example.demo.upload;
 
+import com.example.demo.model.Job;
+import com.example.demo.model.JobRepository;
 import com.example.demo.parsing.PdfExtractor;
+import com.example.demo.queue.ChunkPublisher;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
@@ -10,19 +13,30 @@ import java.util.Map;
 public class UploadController {
 
     private final PdfExtractor pdfExtractor;
+    private final ChunkPublisher chunkPublisher;
+    private final JobRepository jobRepository;
 
-    public UploadController(PdfExtractor pdfExtractor) {
+    public UploadController(PdfExtractor pdfExtractor, ChunkPublisher chunkPublisher, JobRepository jobRepository) {
         this.pdfExtractor = pdfExtractor;
+        this.chunkPublisher = chunkPublisher;
+        this.jobRepository = jobRepository;
     }
 
     @PostMapping("/upload")
-    public Map<String, String> upload(@RequestParam("file") MultipartFile file) throws Exception {
-        String text = pdfExtractor.extract(file);
+    public Map<String, Object> upload(@RequestParam("file") MultipartFile file) throws Exception {
+        Map<String, String> chunks = pdfExtractor.extract(file);
+
+        String jobId = java.util.UUID.randomUUID().toString();
+        Job job = new Job(jobId, file.getOriginalFilename(), chunks.size());
+        jobRepository.save(job);
+
+        chunkPublisher.publish(chunks, jobId, file.getOriginalFilename());
+
         return Map.of(
-            "status", "extracted",
+            "job_id", jobId,
             "filename", file.getOriginalFilename(),
-            "characters", String.valueOf(text.length()),
-            "preview", text.substring(0, Math.min(200, text.length()))
+            "total_chunks", chunks.size(),
+            "status", "processing"
         );
     }
 }

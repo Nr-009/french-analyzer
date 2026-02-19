@@ -22,6 +22,13 @@ class ConfigReader:
         self.INCLUDE_POS_DISTRIBUTION = self._get_bool("INCLUDE_POS_DISTRIBUTION", True)
         self.INCLUDE_NAMED_ENTITIES = self._get_bool("INCLUDE_NAMED_ENTITIES", True)
         self.INCLUDE_DEPENDENCY_ANALYSIS = self._get_bool("INCLUDE_DEPENDENCY_ANALYSIS", True)
+
+        self.RABBITMQ_HOST = os.getenv("RABBITMQ_HOST", "localhost")
+        self.RABBITMQ_USER = os.getenv("RABBITMQ_USER", "guest")
+        self.RABBITMQ_PASS = os.getenv("RABBITMQ_PASS", "guest")
+        self.SPRING_BOOT_PORT = self._get_int("SPRING_BOOT_PORT", 8080)
+        self.SPRING_BOOT_HOST = os.getenv("SPRING_BOOT_HOST", "localhost")
+        self.QUEUE_NAME = os.getenv("QUEUE_NAME", "chunk.queue")
         
         self.PYTHON_NLP_PORT = self._get_int("PYTHON_NLP_PORT", 10001)
         self.LOG_LEVEL = os.getenv("LOG_LEVEL", "info")
