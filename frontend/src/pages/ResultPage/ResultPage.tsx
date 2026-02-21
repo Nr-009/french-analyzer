@@ -6,7 +6,7 @@ import {
 } from 'recharts';
 import type { ChunkResult, TopWord, Statistics } from '../../types';
 import { getJobChunks } from '../../api/clients';
-import './ResultsPage.css';
+import './ResultPage.css';
 
 export default function ResultsPage() {
   const { jobId } = useParams<{ jobId: string }>();

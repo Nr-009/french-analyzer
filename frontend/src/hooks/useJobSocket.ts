@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Client } from '@stomp/stompjs';
 
+const API_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8080';
+
+const WS_URL = API_URL.replace(/^http/, 'ws');
+
 interface JobProgress {
   completedChunks: number;
   totalChunks: number;
@@ -16,7 +20,7 @@ export function useJobSocket(jobId: string) {
 
   useEffect(() => {
     const client = new Client({
-      brokerURL: `ws://localhost:8080/ws/websocket`,
+      brokerURL: `${WS_URL}/ws/websocket`,
       onConnect: () => {
         client.subscribe(`/topic/job/${jobId}`, (message) => {
           const [, completed, total, status] = message.body.split(':');
@@ -28,9 +32,7 @@ export function useJobSocket(jobId: string) {
         });
       },
     });
-
     client.activate();
-
     return () => {
       client.deactivate();
     };
