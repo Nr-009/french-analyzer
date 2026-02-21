@@ -1,0 +1,21 @@
+.job-page {
+  min-height: 100vh;
+  background: #070d1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.job-page__id {
+  font-family: 'DM Mono', monospace;
+  color: #4f8ef7;
+  font-size: 0.9rem;
+}
+
+.job-page__eyebrow {
+  color: #4f8ef7;
+}
+
+.job-page__title {
+  color: #e8f0ff;
+}

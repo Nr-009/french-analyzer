@@ -1,5 +1,5 @@
 services:
-  
+
   postgres:
     image: postgres:16
     ports:
@@ -9,23 +9,6 @@ services:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
 
-  spring-boot:
-    build: ./demo
-    ports:
-      - "${SPRING_BOOT_PORT}:8080"
-    env_file:
-      - .env
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
-      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
-      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASS}
-      SPRING_RABBITMQ_HOST: rabbitmq
-      SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
-      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASS}
-    depends_on:
-      - postgres
-      - rabbitmq
   rabbitmq:
     image: rabbitmq:3-management
     ports:
@@ -40,15 +23,49 @@ services:
       timeout: 10s
       retries: 5
 
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "${REDIS_PORT}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  spring-boot:
+    build: ./demo
+    ports:
+      - "${SPRING_BOOT_PORT}:8080"
+    env_file:
+      - .env
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${POSTGRES_DB}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASS}
+      SPRING_RABBITMQ_HOST: ${RABBITMQ_HOST}
+      SPRING_RABBITMQ_PORT: ${RABBITMQ_PORT}
+      SPRING_RABBITMQ_USERNAME: ${RABBITMQ_USER}
+      SPRING_RABBITMQ_PASSWORD: ${RABBITMQ_PASS}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+    depends_on:
+      postgres:
+        condition: service_started
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   worker:
     build: ./workers
     env_file:
       - .env
     environment:
-      RABBITMQ_HOST: rabbitmq
-      SPRING_BOOT_HOST: spring-boot
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      SPRING_BOOT_HOST: ${SPRING_BOOT_HOST}
     depends_on:
       rabbitmq:
-        condition: service_healthy  # ← waits until healthcheck passes
+        condition: service_healthy
     deploy:
       replicas: ${WORKER_REPLICAS}
