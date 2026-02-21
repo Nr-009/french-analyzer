@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
   Tooltip, ResponsiveContainer,
@@ -10,6 +10,7 @@ import './ResultsPage.css';
 
 export default function ResultsPage() {
   const { jobId } = useParams<{ jobId: string }>();
+  const navigate = useNavigate();
   const [chunks, setChunks] = useState<ChunkResult[]>([]);
   const [selectedChunk, setSelectedChunk] = useState<ChunkResult | null>(null);
   const [loading, setLoading] = useState(true);
@@ -69,6 +70,10 @@ export default function ResultsPage() {
   return (
     <main className="results-page">
       <div className="results-page__content">
+
+        <button className="results-page__back" onClick={() => navigate('/')}>
+          ← New Analysis
+        </button>
 
         <header className="results-page__header">
           <div className="results-page__eyebrow">Analysis Complete</div>
