@@ -25,3 +25,11 @@ export async function getJob(jobId: string) {
 
   return response.json();
 }
+
+export async function getJobChunks(jobId: string) {
+  const response = await fetch(`${API_URL}/api/jobs/${jobId}/chunks`);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch chunks: ${response.statusText}`);
+  }
+  return response.json();
+}

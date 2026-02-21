@@ -7,4 +7,6 @@ import java.util.List;
 @Repository
 public interface ChunkResultRepository extends JpaRepository<ChunkResult, String> {
     List<ChunkResult> findByJob_JobId(String jobId);
+    List<ChunkResult> findByJob_JobIdOrderByChunkIndexAsc(String jobId);
 }
+
