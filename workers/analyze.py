@@ -9,7 +9,7 @@ lexique_data = load_lexique()
 
 class Analyzer:
 
-    def analyze(self, text: str) -> dict:
+    def analyze(self, text: str, has_anki: bool = False, known_words: set = None) -> dict:
         start_time = time.time()
         doc = nlp(text)
 
@@ -88,6 +88,13 @@ class Analyzer:
             if w["lemma"].lower() not in seen_lemmas:
                 seen_lemmas.add(w["lemma"].lower())
                 unique_word_data.append(w)
+
+        # If Anki deck provided, remove known words before trimming
+        if has_anki and known_words:
+            unique_word_data = [
+                w for w in unique_word_data
+                if w["lemma"].lower() not in known_words
+            ]
 
         top_words = unique_word_data[:config.TOP_WORDS_LIMIT]
         difficulty_score = self._calculate_difficulty(top_words, total_words, avg_tree_depth)

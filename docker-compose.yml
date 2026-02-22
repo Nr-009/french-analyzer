@@ -1,5 +1,4 @@
 services:
-
   postgres:
     image: postgres:16
     ports:
@@ -32,7 +31,20 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-
+  libretranslate:
+    image: libretranslate/libretranslate
+    ports:
+      - "${LIBRETRANSLATE_PORT}:15000"
+    environment:
+      LT_LOAD_ONLY: "fr,en"
+    volumes:
+      - libretranslate_models:/home/libretranslate/.local
+    healthcheck:
+      test: ['CMD-SHELL', './venv/bin/python scripts/healthcheck.py']
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
   spring-boot:
     build: ./demo
     ports:
@@ -56,6 +68,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      libretranslate:
+        condition: service_healthy
 
   worker:
     build: ./workers
@@ -69,12 +83,16 @@ services:
         condition: service_healthy
     deploy:
       replicas: ${WORKER_REPLICAS}
+
   frontend:
     build:
       context: ./frontend
       args:
         VITE_API_URL: ${VITE_API_URL}
     ports:
-      - "${FRONTEND_PORT:-3000}:80"
+      - "${FRONTEND_PORT:-5173}:80"
     depends_on:
       - spring-boot
+
+volumes:
+  libretranslate_models:

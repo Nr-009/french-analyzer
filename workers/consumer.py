@@ -12,10 +12,12 @@ def callback(ch, method, properties, body):
         chunk_index = message["chunk_index"]
         chunk_name = message["chunk_name"]
         text = message["text"]
+        has_anki = message.get("has_anki", False)
+        known_words = set(message.get("known_words", []))
 
         print(f"Processing chunk {chunk_name} for {filename} (job: {job_id})")
-        result = analyzer.analyze(text)
 
+        result = analyzer.analyze(text, has_anki=has_anki, known_words=known_words)
         result["job_id"] = job_id
         result["filename"] = filename
         result["chunk_index"] = chunk_index
@@ -41,7 +43,6 @@ def main():
     channel.queue_declare(queue=config.QUEUE_NAME, durable=False)
     channel.basic_qos(prefetch_count=1)
     channel.basic_consume(queue=config.QUEUE_NAME, on_message_callback=callback)
-
     print("Worker ready, waiting for chunks...")
     channel.start_consuming()
 

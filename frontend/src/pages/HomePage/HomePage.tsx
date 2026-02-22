@@ -15,7 +15,6 @@ export default function HomePage() {
         <div className="home-page__orb home-page__orb--1" />
         <div className="home-page__orb home-page__orb--2" />
       </div>
-
       <div className="home-page__content">
         <header className="home-page__header">
           <div className="home-page__eyebrow">
@@ -27,7 +26,8 @@ export default function HomePage() {
             <span className="home-page__title--accent">Difficulty Analyzer</span>
           </h1>
           <p className="home-page__subtitle">
-            Upload a French PDF to analyze its difficulty chapter by chapter
+            Upload a French PDF to analyze its difficulty chapter by chapter.
+            Optionally add your Anki deck to personalize the difficulty to you.
           </p>
         </header>
         <UploadForm onUploadSuccess={handleUploadSuccess} />

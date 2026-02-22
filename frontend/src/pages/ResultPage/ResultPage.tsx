@@ -5,7 +5,7 @@ import {
   Tooltip, ResponsiveContainer,
 } from 'recharts';
 import type { ChunkResult, TopWord, Statistics } from '../../types';
-import { getJobChunks } from '../../api/clients';
+import { getJobChunks, exportAnkiDeck } from '../../api/clients';
 import './ResultPage.css';
 
 export default function ResultsPage() {
@@ -14,6 +14,8 @@ export default function ResultsPage() {
   const [chunks, setChunks] = useState<ChunkResult[]>([]);
   const [selectedChunk, setSelectedChunk] = useState<ChunkResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState<string | null>(null);
 
   useEffect(() => {
     getJobChunks(jobId!)
@@ -22,6 +24,18 @@ export default function ResultsPage() {
         setLoading(false);
       });
   }, [jobId]);
+
+  const handleExport = async () => {
+    setExporting(true);
+    setExportError(null);
+    try {
+      await exportAnkiDeck(jobId!);
+    } catch (err: any) {
+      setExportError('Export failed. Try again.');
+    } finally {
+      setExporting(false);
+    }
+  };
 
   const filename = chunks.length > 0 ? chunks[0].filename : '';
   const avgDifficulty = chunks.length > 0
@@ -71,9 +85,20 @@ export default function ResultsPage() {
     <main className="results-page">
       <div className="results-page__content">
 
-        <button className="results-page__back" onClick={() => navigate('/')}>
-          ← New Analysis
-        </button>
+        <div className="results-page__topbar">
+          <button className="results-page__back" onClick={() => navigate('/')}>
+            ← New Analysis
+          </button>
+          <button
+            className="results-page__export"
+            onClick={handleExport}
+            disabled={exporting}
+          >
+            {exporting ? 'Exporting...' : '⬇ Export to Anki'}
+          </button>
+        </div>
+
+        {exportError && <p className="results-page__export-error">{exportError}</p>}
 
         <header className="results-page__header">
           <div className="results-page__eyebrow">Analysis Complete</div>
